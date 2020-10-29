@@ -46,6 +46,7 @@ FatJetContainer::FatJetContainer(const std::string& name, const std::string& det
     m_ECF3              = new std::vector<float>();
     m_C2                = new std::vector<float>();
     m_D2                = new std::vector<float>();
+    m_Width             = new std::vector<float>();
     m_NTrimSubjets      = new std::vector<float>();
     m_NClusters         = new std::vector<int>  ();
     m_nTracks           = new std::vector<int>  ();
@@ -142,6 +143,7 @@ FatJetContainer::~FatJetContainer()
     delete m_ECF3        ;
     delete m_C2          ;
     delete m_D2          ;
+    delete m_Width       ;
     delete m_NTrimSubjets;
     delete m_NClusters   ;
     delete m_nTracks   ;
@@ -238,6 +240,7 @@ void FatJetContainer::setTree(TTree *tree)
     connectBranch<float>(tree, "ECF3",         &m_ECF3);
     connectBranch<float>(tree, "C2",           &m_C2);
     connectBranch<float>(tree, "D2",           &m_D2);
+    connectBranch<float>(tree, "Width",        &m_Width);
     connectBranch<float>(tree, "NTrimSubjets", &m_NTrimSubjets);
     connectBranch<int>  (tree, "Nclusters",    &m_NClusters);
     connectBranch<int>  (tree, "nTracks",      &m_nTracks);
@@ -332,6 +335,7 @@ void FatJetContainer::updateParticle(uint idx, FatJet& fatjet)
     fatjet.ECF3         = m_ECF3        ->at(idx);
     fatjet.C2           = m_C2          ->at(idx);
     fatjet.D2           = m_D2          ->at(idx);
+    fatjet.Width        = m_Width       ->at(idx);
     fatjet.NTrimSubjets = m_NTrimSubjets->at(idx);
     fatjet.NClusters    = m_NClusters   ->at(idx);
     fatjet.nTracks      = m_nTracks     ->at(idx);
@@ -433,6 +437,7 @@ void FatJetContainer::setBranches(TTree *tree)
     setBranch<float>(tree, "ECF3",         m_ECF3);
     setBranch<float>(tree, "C2",           m_C2);
     setBranch<float>(tree, "D2",           m_D2);
+    setBranch<float>(tree, "Width",        m_Width);
     setBranch<float>(tree, "NTrimSubjets", m_NTrimSubjets);
     setBranch<int>  (tree, "Nclusters",    m_NClusters);
     setBranch<int>  (tree, "nTracks",      m_nTracks);
@@ -524,6 +529,7 @@ void FatJetContainer::clear()
     m_ECF3        ->clear();
     m_C2          ->clear();
     m_D2          ->clear();
+    m_Width       ->clear();
     m_NTrimSubjets->clear();
     m_NClusters   ->clear();
     m_nTracks     ->clear();
@@ -684,6 +690,9 @@ void FatJetContainer::FillFatJet( const xAOD::IParticle* particle, int pvLocatio
     } else if( acc_ECF1.isAvailable(*fatjet) && acc_ECF2.isAvailable(*fatjet) && acc_ECF3.isAvailable(*fatjet)){
       m_C2->push_back( acc_ECF3(*fatjet)*acc_ECF1(*fatjet)/pow(acc_ECF2(*fatjet),2.0));
     } else{ m_C2->push_back(-999); }
+
+    static SG::AuxElement::ConstAccessor<float> acc_Width ("Width");
+    safeFill<float, float, xAOD::Jet>(fatjet, acc_Width, m_Width, -999, m_units);
 
     static SG::AuxElement::ConstAccessor<int> acc_GhostTrackCount("GhostTrackCount");
     if( acc_GhostTrackCount.isAvailable( *fatjet ) ) {
